@@ -57,10 +57,7 @@ class _AutomationsRoutinesScreenState extends State<AutomationsRoutinesScreen>
       color: AppColors.obsidianBackground,
       child: Stack(
         children: [
-          // 1. Ambient Light Backdrops
-          const _RoutinesAmbientBackdrops(),
-
-          // 2. Main Scrollable List
+          // 1. Main Scrollable List
           ListView(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
             children: [
@@ -910,53 +907,3 @@ class _AutomationsRoutinesScreenState extends State<AutomationsRoutinesScreen>
   }
 }
 
-/// Ambient colored glow accents behind the routines cockpit.
-class _RoutinesAmbientBackdrops extends StatelessWidget {
-  const _RoutinesAmbientBackdrops();
-
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        // Cyan Glow Top-Right
-        Positioned(
-          right: -40,
-          top: -20,
-          child: Container(
-            width: 260,
-            height: 260,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: RadialGradient(
-                colors: [
-                  AppColors.electricCyan.withValues(alpha: 0.18),
-                  AppColors.electricCyan.withValues(alpha: 0.04),
-                  Colors.transparent,
-                ],
-              ),
-            ),
-          ),
-        ),
-        // Violet Glow Left-Center
-        Positioned(
-          left: -40,
-          top: 300,
-          child: Container(
-            width: 280,
-            height: 280,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: RadialGradient(
-                colors: [
-                  AppColors.violetContainerVibrant.withValues(alpha: 0.20),
-                  AppColors.violetContainerVibrant.withValues(alpha: 0.05),
-                  Colors.transparent,
-                ],
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}

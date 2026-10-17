@@ -22,10 +22,7 @@ class OverviewScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        // 1. Ambient Background Glow Orbs
-        const _AmbientBackgroundGlows(),
-
-        // 2. Main Scrollable Content
+        // 1. Main Scrollable Content
         ListView(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
           children: [
@@ -76,61 +73,7 @@ class OverviewScreen extends StatelessWidget {
   }
 }
 
-/// Ambient colored glow accents behind the glassmorphic cockpit.
-class _AmbientBackgroundGlows extends StatelessWidget {
-  const _AmbientBackgroundGlows();
 
-  @override
-  Widget build(BuildContext context) {
-    return Positioned.fill(
-      child: IgnorePointer(
-        child: Stack(
-          children: [
-            // Top-left Electric Cyan ambient glow orb
-            Positioned(
-              left: -50,
-              top: -30,
-              width: 280,
-              height: 280,
-              child: Container(
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: RadialGradient(
-                    colors: [
-                      AppColors.electricCyan.withValues(alpha: 0.22),
-                      AppColors.electricCyan.withValues(alpha: 0.08),
-                      Colors.transparent,
-                    ],
-                  ),
-                ),
-              ),
-            ),
-
-            // Mid-right Violet Aurora ambient glow orb
-            Positioned(
-              right: -60,
-              top: 260,
-              width: 300,
-              height: 300,
-              child: Container(
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: RadialGradient(
-                    colors: [
-                      AppColors.violetContainerVibrant.withValues(alpha: 0.24),
-                      AppColors.violetContainerVibrant.withValues(alpha: 0.07),
-                      Colors.transparent,
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
 
 /// Hero Telemetry Card for Sector Alpha.
 class _TelemetryHeroCard extends StatefulWidget {

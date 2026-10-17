@@ -64,11 +64,7 @@ class _SettingsScreenState extends State<SettingsScreen>
       color: AppColors.obsidianBackground,
       child: Stack(
         children: [
-          // 1. Ambient Glow Backdrops
-          if (widget.state.display.ambientBackdropGlows)
-            _SettingsAmbientBackdrops(accentColor: activeAccentColor),
-
-          // 2. Main Scrollable List
+          // 1. Main Scrollable List
           ListView(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
             children: [
@@ -693,16 +689,6 @@ class _SettingsScreenState extends State<SettingsScreen>
                 widget.onAction(ToggleTacticalHapticsAction(v)),
           ),
           _buildSettingsDivider(),
-          _buildSettingSwitchRow(
-            icon: Icons.wb_sunny_rounded,
-            title: 'Ambient Neon Flare Glows',
-            subtitle: 'Atmospheric cyan and violet radial glow layers',
-            checked: widget.state.display.ambientBackdropGlows,
-            accent: QuickActionAccent.emerald,
-            onCheckedChange: (v) =>
-                widget.onAction(ToggleAmbientBackdropsAction(v)),
-          ),
-          _buildSettingsDivider(),
 
           // Neon Aura Accent Theme Selector
           const Text(
@@ -1076,53 +1062,3 @@ class _SettingsScreenState extends State<SettingsScreen>
   }
 }
 
-/// Ambient colored glow accents behind the settings screen.
-class _SettingsAmbientBackdrops extends StatelessWidget {
-  final Color accentColor;
-
-  const _SettingsAmbientBackdrops({required this.accentColor});
-
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        Positioned(
-          left: -30,
-          top: -20,
-          child: Container(
-            width: 240,
-            height: 240,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: RadialGradient(
-                colors: [
-                  accentColor.withValues(alpha: 0.18),
-                  accentColor.withValues(alpha: 0.04),
-                  Colors.transparent,
-                ],
-              ),
-            ),
-          ),
-        ),
-        Positioned(
-          right: -40,
-          top: 300,
-          child: Container(
-            width: 260,
-            height: 260,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: RadialGradient(
-                colors: [
-                  AppColors.violetContainerVibrant.withValues(alpha: 0.20),
-                  AppColors.violetContainerVibrant.withValues(alpha: 0.05),
-                  Colors.transparent,
-                ],
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}

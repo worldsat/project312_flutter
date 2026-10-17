@@ -19,10 +19,7 @@ class RoomsZonesScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        // 1. Decorative Ambient Light Backdrops
-        const _RoomsAmbientBackdrops(),
-
-        // 2. Main Scrollable List
+        // 1. Main Scrollable List
         ListView(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
           children: [
@@ -87,58 +84,7 @@ class RoomsZonesScreen extends StatelessWidget {
   }
 }
 
-/// Ambient colored glow accents behind the rooms cockpit.
-class _RoomsAmbientBackdrops extends StatelessWidget {
-  const _RoomsAmbientBackdrops();
 
-  @override
-  Widget build(BuildContext context) {
-    return Positioned.fill(
-      child: IgnorePointer(
-        child: Stack(
-          children: [
-            Positioned(
-              left: -40,
-              top: -20,
-              width: 260,
-              height: 260,
-              child: Container(
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: RadialGradient(
-                    colors: [
-                      AppColors.electricCyan.withValues(alpha: 0.20),
-                      AppColors.electricCyan.withValues(alpha: 0.05),
-                      Colors.transparent,
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            Positioned(
-              right: -50,
-              top: 320,
-              width: 280,
-              height: 280,
-              child: Container(
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: RadialGradient(
-                    colors: [
-                      AppColors.violetContainerVibrant.withValues(alpha: 0.22),
-                      AppColors.violetContainerVibrant.withValues(alpha: 0.05),
-                      Colors.transparent,
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
 
 /// Active Habitats Header.
 class _RoomsHeader extends StatelessWidget {

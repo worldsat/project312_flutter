@@ -55,10 +55,7 @@ class _EnergyAnalyticsScreenState extends State<EnergyAnalyticsScreen>
       color: AppColors.obsidianBackground,
       child: Stack(
         children: [
-          // 1. Ambient Light Backdrops
-          const _EnergyAmbientBackdrops(),
-
-          // 2. Main Scrollable Matrix
+          // 1. Main Scrollable Matrix
           ListView(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
             children: [
@@ -1387,72 +1384,3 @@ class _MiniRadialProgressPainter extends CustomPainter {
   }
 }
 
-/// Ambient Light Backdrops for authentic cyber glassmorphism depth.
-class _EnergyAmbientBackdrops extends StatelessWidget {
-  const _EnergyAmbientBackdrops();
-
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        // Cyan Glow Top-Left
-        Positioned(
-          left: -40,
-          top: -20,
-          child: Container(
-            width: 260,
-            height: 260,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: RadialGradient(
-                colors: [
-                  AppColors.electricCyan.withValues(alpha: 0.20),
-                  AppColors.electricCyan.withValues(alpha: 0.05),
-                  Colors.transparent,
-                ],
-              ),
-            ),
-          ),
-        ),
-        // Emerald Glow Top-Right
-        Positioned(
-          right: -40,
-          top: 140,
-          child: Container(
-            width: 280,
-            height: 280,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: RadialGradient(
-                colors: [
-                  AppColors.ecoEmeraldBright.withValues(alpha: 0.18),
-                  AppColors.ecoEmeraldBright.withValues(alpha: 0.04),
-                  Colors.transparent,
-                ],
-              ),
-            ),
-          ),
-        ),
-        // Violet Glow Bottom-Left
-        Positioned(
-          left: 40,
-          top: 520,
-          child: Container(
-            width: 300,
-            height: 300,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: RadialGradient(
-                colors: [
-                  AppColors.violetContainerVibrant.withValues(alpha: 0.22),
-                  AppColors.violetContainerVibrant.withValues(alpha: 0.06),
-                  Colors.transparent,
-                ],
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
