@@ -1,12 +1,30 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
-import '../data/routine_mock_data.dart';
+import '../../../core/services/firestore_service.dart';
 import '../models/routine_models.dart';
 
 /// Unidirectional State Controller for Automations & Routines.
 /// Replicates Android's RoutinesViewModel.kt.
 class RoutinesController extends ValueNotifier<RoutinesUiState> {
-  RoutinesController([RoutinesUiState? initialState])
-      : super(initialState ?? RoutineMockData.createInitialState());
+  final FirestoreService? firestoreService;
+  StreamSubscription<List<ScheduledSequenceItem>>? _routinesSubscription;
+
+  RoutinesController({RoutinesUiState? initialState, this.firestoreService})
+      : super(initialState ?? const RoutinesUiState(routines: [])) {
+    if (firestoreService != null) {
+      _routinesSubscription = firestoreService!.streamRoutines().listen((cloudRoutines) {
+        if (cloudRoutines.isNotEmpty) {
+          value = value.copyWith(routines: cloudRoutines);
+        }
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _routinesSubscription?.cancel();
+    super.dispose();
+  }
 
   void onAction(RoutinesUiAction action) {
     switch (action) {
@@ -31,11 +49,13 @@ class RoutinesController extends ValueNotifier<RoutinesUiState> {
       return routine;
     }).toList();
 
-    final stateText = target?.isEnabled == true ? 'Deactivated' : 'Activated';
+    final nextState = target?.isEnabled == true;
+    final stateText = nextState ? 'Activated' : 'Deactivated';
     value = value.copyWith(
       routines: updated,
       userFeedback: '${target?.title ?? "Routine"} $stateText',
     );
+    firestoreService?.updateRoutineEnabled(routineId, nextState);
   }
 
   void _deployNewRoutine() {
@@ -53,11 +73,8 @@ class RoutinesController extends ValueNotifier<RoutinesUiState> {
       sortedList = List<ScheduledSequenceItem>.from(value.routines)
         ..sort((a, b) => a.title.compareTo(b.title));
     } else {
-      // Revert to initial execution priority order preserving toggled state
-      final currentMap = {for (final r in value.routines) r.id: r.isEnabled};
-      sortedList = RoutineMockData.initialRoutines.map((r) {
-        return r.copyWith(isEnabled: currentMap[r.id] ?? r.isEnabled);
-      }).toList();
+      sortedList = List<ScheduledSequenceItem>.from(value.routines)
+        ..sort((a, b) => a.id.compareTo(b.id));
     }
 
     value = value.copyWith(

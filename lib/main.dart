@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'core/components/nexus_bottom_nav_bar.dart';
 import 'core/components/nexus_top_app_bar.dart';
+import 'core/services/firebase_auth_service.dart';
+import 'core/services/firestore_service.dart';
 import 'core/theme/app_theme.dart';
+import 'features/auth/presentation/auth_sheet.dart';
 import 'features/energy/controllers/energy_controller.dart';
 import 'features/energy/models/energy_models.dart';
 import 'features/energy/presentation/energy_analytics_screen.dart';
@@ -18,8 +22,9 @@ import 'features/routines/presentation/automations_routines_screen.dart';
 import 'features/settings/controllers/settings_controller.dart';
 import 'features/settings/models/settings_models.dart';
 import 'features/settings/presentation/settings_screen.dart';
+import 'firebase_options.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
@@ -29,6 +34,16 @@ void main() {
       systemNavigationBarIconBrightness: Brightness.light,
     ),
   );
+
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+  } catch (e) {
+    // ignore: avoid_print
+    print('Firebase initialization notice: $e');
+  }
+
   runApp(const NexusHabitatApp());
 }
 
@@ -59,15 +74,21 @@ class _HabitatShellState extends State<HabitatShell> {
   late final EnergyController _energyController;
   late final RoutinesController _routinesController;
   late final SettingsController _settingsController;
+  late final FirebaseAuthService _authService;
+  late final FirestoreService _firestoreService;
 
   @override
   void initState() {
     super.initState();
-    _overviewController = OverviewController();
-    _roomsController = RoomsController();
-    _energyController = EnergyController();
-    _routinesController = RoutinesController();
-    _settingsController = SettingsController();
+    _authService = FirebaseAuthService();
+    _firestoreService = FirestoreService();
+    _firestoreService.seedInitialDataIfEmpty();
+
+    _overviewController = OverviewController(_firestoreService);
+    _roomsController = RoomsController(firestoreService: _firestoreService);
+    _energyController = EnergyController(_firestoreService);
+    _routinesController = RoutinesController(firestoreService: _firestoreService);
+    _settingsController = SettingsController(_firestoreService);
   }
 
   @override
@@ -94,7 +115,7 @@ class _HabitatShellState extends State<HabitatShell> {
             powerDemandText: "${state.telemetry.powerDemandKw} kW",
             hasUnreadNotification: state.hasUnreadNotifications,
             onNotificationClick: () => _overviewController.onAction(const ToggleNotificationsAction()),
-            onAvatarClick: () => _overviewController.onAction(const OpenUserProfileAction()),
+            onAvatarClick: () => AuthSheet.show(context, _authService),
           ),
           bottomNavigationBar: NexusBottomNavBar(
             currentDestination: state.currentNavDestination,

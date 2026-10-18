@@ -1,18 +1,54 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
-import '../data/settings_mock_data.dart';
+import '../../../core/services/firestore_service.dart';
 import '../models/settings_models.dart';
 
-/// Unidirectional State Controller for the Settings & Habitat Matrix Hub.
+/// Unidirectional State Controller for the Settings & Habitat Matrix Hub synced with Firestore.
 /// Replicates Android SettingsViewModel.kt.
 class SettingsController extends ValueNotifier<SettingsUiState> {
+  final FirestoreService? _firestoreService;
+  StreamSubscription<Map<String, dynamic>>? _settingsSub;
   Timer? _diagnosticTimer;
 
-  SettingsController([SettingsUiState? initialState])
-      : super(initialState ?? SettingsMockData.createInitialState());
+  SettingsController([
+    this._firestoreService,
+    SettingsUiState? initialState,
+  ]) : super(initialState ?? const SettingsUiState()) {
+    _initFirestore();
+  }
+
+  void _initFirestore() {
+    if (_firestoreService == null) return;
+
+    _settingsSub = _firestoreService.streamSettings().listen((data) {
+      if (data.isNotEmpty) {
+        value = value.copyWith(
+          connectivity: value.connectivity.copyWith(
+            threadMeshActive: data['threadMeshActive'] as bool? ?? value.connectivity.threadMeshActive,
+            localAiEdgeInference: data['localAiEdgeInference'] as bool? ?? value.connectivity.localAiEdgeInference,
+            matterBridgeSync: data['matterBridgeSync'] as bool? ?? value.connectivity.matterBridgeSync,
+            cloudTelemetrySync: data['cloudTelemetrySync'] as bool? ?? value.connectivity.cloudTelemetrySync,
+          ),
+          automation: value.automation.copyWith(
+            autonomousEcoTuning: data['autonomousEcoTuning'] as bool? ?? value.automation.autonomousEcoTuning,
+            geofenceAutoArm: data['geofenceAutoArm'] as bool? ?? value.automation.geofenceAutoArm,
+            millimeterPresence: data['millimeterPresence'] as bool? ?? value.automation.millimeterPresence,
+            circadianSpectrumLighting: data['circadianSpectrumLighting'] as bool? ?? value.automation.circadianSpectrumLighting,
+          ),
+          display: value.display.copyWith(
+            ultraGlassShaders: data['ultraGlassShaders'] as bool? ?? value.display.ultraGlassShaders,
+            tacticalHaptics: data['tacticalHaptics'] as bool? ?? value.display.tacticalHaptics,
+            ambientBackdropGlows: data['ambientBackdropGlows'] as bool? ?? value.display.ambientBackdropGlows,
+          ),
+          isEmergencyGridLocked: data['isEmergencyGridLocked'] as bool? ?? value.isEmergencyGridLocked,
+        );
+      }
+    });
+  }
 
   @override
   void dispose() {
+    _settingsSub?.cancel();
     _diagnosticTimer?.cancel();
     super.dispose();
   }
@@ -63,6 +99,7 @@ class SettingsController extends ValueNotifier<SettingsUiState> {
           ? 'Thread Mesh 6LoWPAN protocol enabled'
           : 'Thread Mesh disabled (Fallback to Wi-Fi)',
     );
+    _firestoreService?.updateSettingsField('threadMeshActive', enabled);
   }
 
   void _toggleLocalAi(bool enabled) {
@@ -72,6 +109,7 @@ class SettingsController extends ValueNotifier<SettingsUiState> {
           ? 'Edge Neural Processing enabled (Zero cloud latency)'
           : 'Cloud Inference enabled',
     );
+    _firestoreService?.updateSettingsField('localAiEdgeInference', enabled);
   }
 
   void _toggleMatterBridge(bool enabled) {
@@ -81,6 +119,7 @@ class SettingsController extends ValueNotifier<SettingsUiState> {
           ? 'Matter 1.3 Bridge connected to HomeKit & Google Home'
           : 'Matter Bridge offline',
     );
+    _firestoreService?.updateSettingsField('matterBridgeSync', enabled);
   }
 
   void _toggleCloudSync(bool enabled) {
@@ -90,6 +129,7 @@ class SettingsController extends ValueNotifier<SettingsUiState> {
           ? 'Encrypted Cloud Snapshot Relay enabled'
           : 'Local-Only Enclave mode active',
     );
+    _firestoreService?.updateSettingsField('cloudTelemetrySync', enabled);
   }
 
   void _toggleAutonomousEco(bool enabled) {
@@ -99,6 +139,7 @@ class SettingsController extends ValueNotifier<SettingsUiState> {
           ? 'AI Autonomous Eco-Tuning engaged'
           : 'Eco-Tuning set to manual schedule',
     );
+    _firestoreService?.updateSettingsField('autonomousEcoTuning', enabled);
   }
 
   void _toggleGeofenceAutoArm(bool enabled) {
@@ -108,6 +149,7 @@ class SettingsController extends ValueNotifier<SettingsUiState> {
           ? '500m Geofence Perimeter Auto-Arm enabled'
           : 'Geofence Auto-Arm disabled',
     );
+    _firestoreService?.updateSettingsField('geofenceAutoArm', enabled);
   }
 
   void _toggleMillimeterPresence(bool enabled) {
@@ -117,6 +159,7 @@ class SettingsController extends ValueNotifier<SettingsUiState> {
           ? '60GHz mmWave Radar micro-presence online'
           : 'mmWave Radar sleeping',
     );
+    _firestoreService?.updateSettingsField('millimeterPresence', enabled);
   }
 
   void _selectTempUnit(TemperatureUnit unit) {
@@ -125,12 +168,14 @@ class SettingsController extends ValueNotifier<SettingsUiState> {
       userFeedback:
           'Habitat Temperature Unit set to ${unit.label} (${unit.symbol})',
     );
+    _firestoreService?.updateSettingsField('tempUnit', unit.name);
   }
 
   void _setAqiThreshold(int threshold) {
     value = value.copyWith(
       automation: value.automation.copyWith(aqiAlertThreshold: threshold),
     );
+    _firestoreService?.updateSettingsField('aqiAlertThreshold', threshold);
   }
 
   void _toggleCircadianLighting(bool enabled) {
@@ -141,6 +186,7 @@ class SettingsController extends ValueNotifier<SettingsUiState> {
           ? 'Circadian Kelvin Dynamic Spectrum active (2700K - 6500K)'
           : 'Static color temperature mode',
     );
+    _firestoreService?.updateSettingsField('circadianSpectrumLighting', enabled);
   }
 
   void _toggleUltraGlass(bool enabled) {
@@ -150,6 +196,7 @@ class SettingsController extends ValueNotifier<SettingsUiState> {
           ? 'Ultra Frosted Glassmorphism shaders active'
           : 'Performance glass mode active',
     );
+    _firestoreService?.updateSettingsField('ultraGlassShaders', enabled);
   }
 
   void _toggleTacticalHaptics(bool enabled) {
@@ -159,6 +206,7 @@ class SettingsController extends ValueNotifier<SettingsUiState> {
           ? 'Tactile Haptic Feedback enabled'
           : 'Haptics disabled',
     );
+    _firestoreService?.updateSettingsField('tacticalHaptics', enabled);
   }
 
   void _selectThemeAccent(CyberThemeAccent accent) {
@@ -166,6 +214,7 @@ class SettingsController extends ValueNotifier<SettingsUiState> {
       display: value.display.copyWith(selectedAccent: accent),
       userFeedback: 'Aura Accent Palette switched to ${accent.label}',
     );
+    _firestoreService?.updateSettingsField('selectedAccent', accent.name);
   }
 
   void _toggleAmbientBackdrops(bool enabled) {
@@ -175,6 +224,7 @@ class SettingsController extends ValueNotifier<SettingsUiState> {
           ? 'Neon Backdrop Flare Glows enabled'
           : 'Minimal backdrop mode',
     );
+    _firestoreService?.updateSettingsField('ambientBackdropGlows', enabled);
   }
 
   void _triggerEmergencyLockdown() {
@@ -185,6 +235,7 @@ class SettingsController extends ValueNotifier<SettingsUiState> {
           ? '⚠️ EMERGENCY GRID LOCKDOWN ENGAGED: Gas & High-Voltage relays isolated'
           : '✅ Grid Lockdown cleared: Nominal telemetry restored',
     );
+    _firestoreService?.updateSettingsField('isEmergencyGridLocked', newLocked);
   }
 
   void _runSystemDiagnostic() {

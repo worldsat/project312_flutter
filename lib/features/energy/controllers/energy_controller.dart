@@ -1,13 +1,80 @@
+import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
-import '../data/energy_mock_data.dart';
+import '../../../core/services/firestore_service.dart';
 import '../models/energy_models.dart';
 
-/// Unidirectional State Controller for Energy Analytics.
+/// Unidirectional State Controller for Energy Analytics synced with Firestore.
 /// Replicates the logic in Android's EnergyViewModel.kt.
 class EnergyController extends ValueNotifier<EnergyUiState> {
-  EnergyController([EnergyUiState? initialState])
-      : super(initialState ?? EnergyMockData.createInitialState());
+  final FirestoreService? _firestoreService;
+  StreamSubscription<List<ApplianceDrainItem>>? _appliancesSub;
+
+  static const List<ApplianceDrainItem> _defaultAppliances = [
+    ApplianceDrainItem(
+      id: 'climate_control',
+      name: 'Climate Control System',
+      zoneDescription: 'HVAC Zone 01 & 02',
+      powerKw: 1.19,
+      percentage: 42,
+      accent: ApplianceAccent.cyan,
+      ecoTip: 'Eco Tip: Shifting +1°C saves 0.18 kW/hr',
+      isEcoTipApplied: false,
+    ),
+    ApplianceDrainItem(
+      id: 'water_heater',
+      name: 'Quantum Water Heater',
+      zoneDescription: 'Thermal storage: 91%',
+      powerKw: 0.68,
+      percentage: 24,
+      accent: ApplianceAccent.purple,
+      ecoTip: null,
+      isEcoTipApplied: false,
+    ),
+    ApplianceDrainItem(
+      id: 'ambient_lighting',
+      name: 'Cyber Ambient Lighting',
+      zoneDescription: 'Circadian sequence enabled',
+      powerKw: 0.51,
+      percentage: 18,
+      accent: ApplianceAccent.cyanDim,
+      ecoTip: null,
+      isEcoTipApplied: false,
+    ),
+    ApplianceDrainItem(
+      id: 'studio_workstations',
+      name: 'Studio Workstations',
+      zoneDescription: '3 Units • Sleep ready',
+      powerKw: 0.46,
+      percentage: 16,
+      accent: ApplianceAccent.emerald,
+      ecoTip: null,
+      isEcoTipApplied: false,
+    ),
+  ];
+
+  EnergyController([
+    this._firestoreService,
+    EnergyUiState? initialState,
+  ]) : super(initialState ?? const EnergyUiState(appliances: _defaultAppliances)) {
+    _initFirestore();
+  }
+
+  void _initFirestore() {
+    if (_firestoreService == null) return;
+
+    _appliancesSub = _firestoreService.streamAppliances().listen((cloudAppliances) {
+      if (cloudAppliances.isNotEmpty) {
+        value = value.copyWith(appliances: cloudAppliances);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _appliancesSub?.cancel();
+    super.dispose();
+  }
 
   void onAction(EnergyUiAction action) {
     switch (action) {
@@ -65,6 +132,8 @@ class EnergyController extends ValueNotifier<EnergyUiState> {
       userFeedback:
           '${targetAppliance?.name ?? "Appliance"} Eco-Offset applied',
     );
+
+    _firestoreService?.updateApplianceEcoTip(applianceId, true);
   }
 
   void _applyAutoPowerOptimization() {
